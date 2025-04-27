@@ -1,0 +1,34 @@
+azure-subscription    = "XXXXXX-XXXXXXX-XXXXXX-XXXXX"
+azure-tenant          = "XXXXXX-XXXXXXX-XXXXXX-XXXXX"
+azure-resource-group  = "tf-resource-group"
+azure-location        = "spaincentral"
+azure-net-name        = "tf-net"
+azure-address-space   = ["10.0.0.0/16"]
+azure-dns-servers     = ["8.8.8.8"]
+azure-subnet-name     = "tf-subnet"
+azure-subnet-prefixes = ["10.0.10.0/24"]
+
+# Global VMs options
+azure-vm-size              = "Standard_B1s"
+azure-admin-username       = "azureuser"
+azure-storage-account-type = "Standard_LRS"
+
+# # Ubuntu 24
+# azure-os-publisher = "Canonical"
+# azure-os-offer     = "ubuntu-24_04-lts"
+# azure-os-sku       = "server"
+# azure-os-version   = "latest"
+
+# Debian 11
+azure-os-publisher = "Debian"
+azure-os-offer     = "debian-11"
+azure-os-sku       = "11-backports-gen2"
+azure-os-version   = "latest"
+
+# Jenkins node 
+jenkins-privateip-address = "10.0.10.50"
+jenkins-vm-name           = "cnsa-jks-01"
+
+# Deployment node 
+deploy-privateip-address = "10.0.10.100"
+deploy-vm-name           = "cnsa-dpl-01"

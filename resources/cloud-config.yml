@@ -1,0 +1,33 @@
+#cloud-config
+
+bootcmd:
+  - echo "### [1] Creating Jenkins deployment directories"
+  - mkdir -p /docker-deploys/jenkins
+
+write_files:
+  - path: /tmp/install_docker.sh
+    permissions: '0755'
+    content: |
+      {{install_docker}}
+
+  - path: /tmp/run_jenkins.sh
+    permissions: '0755'
+    content: |
+      {{jenkins_run}}
+
+  - path: /docker-deploys/jenkins/Dockerfile
+    permissions: '0644'
+    content: |
+      {{dockerfile}}
+
+  - path: /docker-deploys/jenkins/docker-compose.yml
+    permissions: '0644'
+    content: |
+      {{docker_compose}}
+
+runcmd:
+  - echo "### [2] Installing Docker"
+  {{install_docker}}
+
+  - echo "### [3] Running Jenkins"
+  {{jenkins_run}}
