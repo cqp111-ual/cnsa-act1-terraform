@@ -9,7 +9,10 @@ azure-subnet-name     = "tf-subnet"
 azure-subnet-prefixes = ["10.0.10.0/24"]
 
 # Global VMs options
+# 1vcpu, 1gb ram (free)
 azure-vm-size              = "Standard_B1s"
+# # 2vcpu, 4gb ram
+# azure-vm-size              = "Standard_B2ms"
 azure-admin-username       = "azureuser"
 azure-storage-account-type = "Standard_LRS"
 
