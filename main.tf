@@ -1,4 +1,4 @@
-# CNSA - Activity 01 [https://ualcnsa.github.io/cicd/despliegue-continuo/v.2025/infraestructura/index.html]
+# Loc8r IT 
 
 ######################
 ## Global resources ##
@@ -24,16 +24,19 @@ resource "azurerm_subnet" "tf-subnet" {
   resource_group_name  = azurerm_resource_group.tf-resource-group.name
   virtual_network_name = azurerm_virtual_network.tf-net.name
   address_prefixes     = var.azure-subnet-prefixes
+  # depends_on           = [azurerm_virtual_network.tf-net]
+
 }
 
-# Security Group (common for both machines)
+# Security Group (common for all machines)
 resource "azurerm_network_security_group" "tf-nsg" {
-  name                = "tf-nsg"
+  name                = var.azure-nsg-name
   location            = azurerm_resource_group.tf-resource-group.location
   resource_group_name = azurerm_resource_group.tf-resource-group.name
+  # depends_on          = [azurerm_resource_group.tf-resource-group]
 
   security_rule {
-    name                       = "SSH"
+    name                       = "ssh"
     priority                   = 1001
     direction                  = "Inbound"
     access                     = "Allow"
@@ -45,7 +48,7 @@ resource "azurerm_network_security_group" "tf-nsg" {
   }
 
   security_rule {
-    name                       = "HTTP"
+    name                       = "http"
     priority                   = 1002
     direction                  = "Inbound"
     access                     = "Allow"
@@ -57,7 +60,7 @@ resource "azurerm_network_security_group" "tf-nsg" {
   }
 
   security_rule {
-    name                       = "HTTPS"
+    name                       = "https"
     priority                   = 1003
     direction                  = "Inbound"
     access                     = "Allow"
@@ -69,8 +72,20 @@ resource "azurerm_network_security_group" "tf-nsg" {
   }
 
   security_rule {
-    name                       = "Jenkins-Docker"
+    name                       = "mongo"
     priority                   = 1004
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "27017"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "jenkins-docker"
+    priority                   = 1005
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
@@ -79,49 +94,27 @@ resource "azurerm_network_security_group" "tf-nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
-
-  security_rule {
-    name                       = "Spring-Boot-Apps"
-    priority                   = 1005
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "8080-8081"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "Nodejs-Apps"
-    priority                   = 1006
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "3000-3001"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
 }
 
-##################
-## Jenkins Node ##
-##################
+# No crearemos las maquinas de jenkins ni la maquina de build
+# reutilizaremos las maquinas de la actividad 1 de CNSA
+# - cnsa-jks-01.spaincentral.cloudapp.azure.com -> Jenkins
+# - cnsa-dpl-01.spaincentral.cloudapp.azure.com -> Build
 
+#### Staging node
 # Public IP
-resource "azurerm_public_ip" "tf-jenkins-ip" {
-  name                = "tf-jenkins-ip"
+resource "azurerm_public_ip" "tf-stage-ip" {
+  name                = "${var.stage-vm-name}-ip"
   location            = azurerm_resource_group.tf-resource-group.location
   resource_group_name = azurerm_resource_group.tf-resource-group.name
-  domain_name_label   = var.jenkins-vm-name
+  domain_name_label   = var.stage-vm-name
   allocation_method   = "Dynamic"
   sku                 = "Basic"
 }
 
 # Network interface
-resource "azurerm_network_interface" "tf-jenkins-nic" {
-  name                = "tf-jenkins-nic"
+resource "azurerm_network_interface" "tf-stage-nic" {
+  name                = "${var.stage-vm-name}-nic"
   location            = azurerm_resource_group.tf-resource-group.location
   resource_group_name = azurerm_resource_group.tf-resource-group.name
 
@@ -131,25 +124,25 @@ resource "azurerm_network_interface" "tf-jenkins-nic" {
     # # Here we can apply either Static or Dynamic
     # private_ip_address_allocation = "Dynamic"
     private_ip_address_allocation = "Static"
-    private_ip_address            = var.jenkins-privateip-address
-    public_ip_address_id          = azurerm_public_ip.tf-jenkins-ip.id
+    private_ip_address            = var.stage-privateip-address
+    public_ip_address_id          = azurerm_public_ip.tf-stage-ip.id
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "tf-jenkins-nic-nsg" {
-  network_interface_id      = azurerm_network_interface.tf-jenkins-nic.id
+resource "azurerm_network_interface_security_group_association" "tf-stage-nic-nsg" {
+  network_interface_id      = azurerm_network_interface.tf-stage-nic.id
   network_security_group_id = azurerm_network_security_group.tf-nsg.id
 }
 
 # VM instance
-resource "azurerm_linux_virtual_machine" "tf-jenkins" {
-  name                = var.jenkins-vm-name
+resource "azurerm_linux_virtual_machine" "tf-stage" {
+  name                = var.stage-vm-name
   resource_group_name = azurerm_resource_group.tf-resource-group.name
   location            = azurerm_resource_group.tf-resource-group.location
-  size                = var.azure-vm-size
+  size                = var.stage-vm-size
   admin_username      = var.azure-admin-username
   network_interface_ids = [
-    azurerm_network_interface.tf-jenkins-nic.id,
+    azurerm_network_interface.tf-stage-nic.id,
   ]
 
   admin_ssh_key {
@@ -169,27 +162,24 @@ resource "azurerm_linux_virtual_machine" "tf-jenkins" {
     version   = var.azure-os-version
   }
 
-  # custom_data = data.cloudinit_config.jenkins_cloud_init.rendered
+  # # does not work
+  # user_data = base64encode(file("${path.module}/resources/00-install-docker.sh"))
 }
 
-output "tf-jenkins-fqdn" {
-  value      = azurerm_public_ip.tf-jenkins-ip.fqdn
-  depends_on = [azurerm_linux_virtual_machine.tf-jenkins]
+output "tf-stage-fqdn" {
+  value      = azurerm_public_ip.tf-stage-ip.fqdn
+  depends_on = [azurerm_linux_virtual_machine.tf-stage]
 }
 
-output "tf-jenkins-public-ip" {
-  value      = azurerm_public_ip.tf-jenkins-ip.ip_address
-  depends_on = [azurerm_linux_virtual_machine.tf-jenkins]
+output "tf-stage-public-ip" {
+  value      = azurerm_public_ip.tf-stage-ip.ip_address
+  depends_on = [azurerm_linux_virtual_machine.tf-stage]
 }
 
-
-#####################
-## Deployment Node ##
-#####################
-
+#### Production node
 # Public IP
 resource "azurerm_public_ip" "tf-deploy-ip" {
-  name                = "tf-deploy-ip"
+  name                = "${var.deploy-vm-name}-ip"
   location            = azurerm_resource_group.tf-resource-group.location
   resource_group_name = azurerm_resource_group.tf-resource-group.name
   domain_name_label   = var.deploy-vm-name
@@ -199,13 +189,15 @@ resource "azurerm_public_ip" "tf-deploy-ip" {
 
 # Network interface
 resource "azurerm_network_interface" "tf-deploy-nic" {
-  name                = "tf-deploy-nic"
+  name                = "${var.deploy-vm-name}-nic"
   location            = azurerm_resource_group.tf-resource-group.location
   resource_group_name = azurerm_resource_group.tf-resource-group.name
 
   ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.tf-subnet.id
+    name      = "internal"
+    subnet_id = azurerm_subnet.tf-subnet.id
+    # # Here we can apply either Static or Dynamic
+    # private_ip_address_allocation = "Dynamic"
     private_ip_address_allocation = "Static"
     private_ip_address            = var.deploy-privateip-address
     public_ip_address_id          = azurerm_public_ip.tf-deploy-ip.id
@@ -222,7 +214,7 @@ resource "azurerm_linux_virtual_machine" "tf-deploy" {
   name                = var.deploy-vm-name
   resource_group_name = azurerm_resource_group.tf-resource-group.name
   location            = azurerm_resource_group.tf-resource-group.location
-  size                = var.azure-vm-size
+  size                = var.deploy-vm-size
   admin_username      = var.azure-admin-username
   network_interface_ids = [
     azurerm_network_interface.tf-deploy-nic.id,
@@ -245,7 +237,8 @@ resource "azurerm_linux_virtual_machine" "tf-deploy" {
     version   = var.azure-os-version
   }
 
-  # custom_data = data.cloudinit_config.jenkins_cloud_init.rendered
+  # # does not work
+  # user_data = base64encode(file("${path.module}/resources/00-install-docker.sh"))
 }
 
 output "tf-deploy-fqdn" {

@@ -1,20 +1,20 @@
-# cnsa-act1-terraform
+# tf-azure
 
-Proyecto Terraform para desplegar la infraestructura requerida para la Actividad 1 de CNSA en el proveedor cloud Azure.
+Infrastructure deployment with Terraform on Azure cloud provider.
 
-## Antes de desplegarlo
+## Prerequisites
 
-- Copiar la clave SSH pública de tu usuario en la carpeta `keys/`.
+- Copy your public SSH key in folder `keys/`.
 
-- Crear el archivo `terraform.tfvars` basado en el de ejemplo, pero rellenando las credenciales `azure-tenant` y `azure-subscription`. Se pueden obtener con el comando (requiere `azure-cli` instalado):
+- Create file `terraform.tfvars` based on the example, insert your credentials for `azure-tenant` and `azure-subscription`. To obtain your credentials, run the next command (requires client-tool `azure-cli` installed):
   
 ```bash
 az account show
 ```
 
-## Despliegue
+## Deployment
 
-Tras crear los archivos, se puede proceder a levantar la infraestructura con los siguientes comandos:
+After prerrequisites, deploy your infrastructure with:
 
 ```bash
 terraform init

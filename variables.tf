@@ -37,11 +37,11 @@ variable "azure-subnet-prefixes" {
   type        = list(string)
 }
 
-# Global VM options
-
-variable "azure-vm-size" {
-  description = "Azure VM size"
+variable "azure-nsg-name" {
+  description = "Azure network security group name"
 }
+
+# Global VM options
 
 variable "azure-admin-username" {
   description = "Admin username"
@@ -74,20 +74,57 @@ variable "azure-os-version" {
 
 # Jenkins VM specific options
 
-variable "jenkins-privateip-address" {
-  description = "Jenkins VM private IP address"
-}
-
 variable "jenkins-vm-name" {
   description = "Jenkins VM name"
 }
 
-# Deployment node VM specific options
+variable "jenkins-vm-size" {
+  description = "Jenkins VM size"
+}
+
+variable "jenkins-privateip-address" {
+  description = "Jenkins VM private IP address"
+}
+
+# Build node VM specific options
+
+variable "build-vm-name" {
+  description = "Build node VM name"
+}
+
+variable "build-vm-size" {
+  description = "Build node VM size"
+}
+
+variable "build-privateip-address" {
+  description = "Build node VM private IP address"
+}
+
+# Staging (pre) node VM specific options
+
+variable "stage-vm-name" {
+  description = "Staging node VM name"
+}
+
+variable "stage-vm-size" {
+  description = "Staging node VM size"
+}
+
+variable "stage-privateip-address" {
+  description = "Staging node VM private IP address"
+}
+
+# Deployment (prod) node VM specific options
+
+variable "deploy-vm-name" {
+  description = "Deployment node VM name"
+}
+
+variable "deploy-vm-size" {
+  description = "Deployment node VM size"
+}
 
 variable "deploy-privateip-address" {
   description = "Deployment node VM private IP address"
 }
 
-variable "deploy-vm-name" {
-  description = "Deployment node VM name"
-}
